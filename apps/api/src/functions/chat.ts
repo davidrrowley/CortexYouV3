@@ -117,15 +117,23 @@ async function handleChat(
 
   const systemPrompt = buildSystemPrompt(sparks, concepts);
 
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
+  const endpoint = process.env.AZURE_OPENAI_ENDPOINT?.replace(/\/+$/, '');
   const apiKey = process.env.AZURE_OPENAI_API_KEY;
   const deployment = process.env.AZURE_OPENAI_DEPLOYMENT ?? 'gpt-4o';
+  const apiVersion = process.env.AZURE_OPENAI_API_VERSION ?? '2024-12-01-preview';
 
   if (!endpoint || !apiKey) {
     return { status: 503, body: 'AI endpoint not configured' };
   }
 
-  const response = await fetch(`${endpoint}/chat/completions`, {
+  // Support both:
+  //   /openai/v1  (OpenAI-compatible, no api-version needed)
+  //   /api/projects/…  (Foundry project endpoint, requires deployment in path + api-version)
+  const chatUrl = endpoint.includes('/openai/v1')
+    ? `${endpoint}/chat/completions`
+    : `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
+
+  const response = await fetch(chatUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -151,7 +159,7 @@ async function handleChat(
         error: 'AI upstream error',
         status: response.status,
         detail: err || '(empty body)',
-        endpoint: endpoint.replace(/key=[^&]+/, 'key=***'),
+        url: chatUrl.replace(/api-key=[^&]+/, 'api-key=***'),
         deployment,
       }),
       headers: { 'Content-Type': 'application/json' },
