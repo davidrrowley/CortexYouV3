@@ -144,8 +144,18 @@ async function handleChat(
   });
 
   if (!response.ok) {
-    const err = await response.text();
-    return { status: 502, body: `AI error: ${err}` };
+    const err = await response.text().catch(() => '(unreadable)');
+    return {
+      status: 502,
+      body: JSON.stringify({
+        error: 'AI upstream error',
+        status: response.status,
+        detail: err || '(empty body)',
+        endpoint: endpoint.replace(/key=[^&]+/, 'key=***'),
+        deployment,
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    };
   }
 
   const result = await response.json() as {
