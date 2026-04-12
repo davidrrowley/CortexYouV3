@@ -111,7 +111,7 @@ async function handleChat(
       r.filter((s): s is Spark => Boolean(s)),
     ),
     Promise.all(conceptPaths.map((p) => readJson<Concept>('items', p))).then((r) =>
-      r.filter((c): c is Concept => Boolean(c) && !c.deletedAt),
+      r.filter((c): c is Concept => c !== null && !c.deletedAt),
     ),
   ]);
 
