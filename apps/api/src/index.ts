@@ -6,3 +6,4 @@ import './functions/concepts';
 import './functions/relationships';
 import './functions/rebuild';
 import './functions/export';
+import './functions/chat';
