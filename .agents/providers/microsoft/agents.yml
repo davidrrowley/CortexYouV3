@@ -1,0 +1,219 @@
+﻿# Azure AI Agent / Semantic Kernel configuration
+#
+# Maps canonical agent IDs from .agents/registry/agents.v1.yml to
+# Azure AI Foundry deployments or Semantic Kernel plugin configurations.
+#
+# Usage:
+#   - Azure AI Foundry: reference these configs when creating agents via
+#     the Azure AI Studio portal or the azure-ai-projects SDK.
+#   - Semantic Kernel: use the plugin_class fields to wire kernel plugins.
+#
+# Keep model deployments in sync with your Azure AI Foundry project.
+
+schema_version: "1.0"
+
+default_deployment_region: eastus2
+
+model_deployments:
+  # Lightweight coordination models
+  cheap_router: "gpt-4o-mini"
+  cheap_text: "gpt-4o-mini"
+  # Balanced reasoning for implementation agents
+  balanced_reasoning: "gpt-4o"
+  # Deep reasoning for architecture and threat modelling
+  top_reasoning: "o3-mini"
+
+agents:
+  - registry_id: orchestrator
+    azure_agent_name: "Orchestrator"
+    model_tier: cheap_router
+    instructions_file: .agents/prompts/orchestrator/system.md
+    tools:
+      - type: file_search
+    tags:
+      stream: orchestration
+
+  - registry_id: speckit-requirements
+    azure_agent_name: "Spec Kit Requirements"
+    model_tier: cheap_text
+    instructions_file: .agents/prompts/speckit-requirements/system.md
+    tools:
+      - type: file_search
+    tags:
+      stream: orchestration
+
+  - registry_id: architect
+    azure_agent_name: "Architecture"
+    model_tier: top_reasoning
+    instructions_file: .agents/prompts/architect/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: app-typescript
+    azure_agent_name: "App TypeScript"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/app-typescript/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: app-python
+    azure_agent_name: "App Python"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/app-python/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: app-java
+    azure_agent_name: "App Java"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/app-java/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: app-go
+    azure_agent_name: "App Go"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/app-go/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: app-dotnet
+    azure_agent_name: "App DotNet"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/app-dotnet/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: frontend-carbon
+    azure_agent_name: "Front-End Carbon"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/frontend-carbon/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: windows-fluent
+    azure_agent_name: "Windows Fluent UI"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/windows-fluent/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: android-material
+    azure_agent_name: "Android Material"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/android-material/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: ux-critic
+    azure_agent_name: "UX Critic"
+    model_tier: cheap_text
+    instructions_file: .agents/prompts/ux-critic/system.md
+    tools:
+      - type: file_search
+    tags:
+      stream: app
+
+  - registry_id: api-design
+    azure_agent_name: "API Design"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/api-design/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: app
+
+  - registry_id: terraform-iac
+    azure_agent_name: "Terraform IaC"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/terraform-iac/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: cloud
+
+  - registry_id: azure-fullstack
+    azure_agent_name: "Azure Fullstack"
+    model_tier: balanced_reasoning
+    instructions_file: .agents/prompts/azure-fullstack/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: cloud
+
+  - registry_id: appsec-tooling
+    azure_agent_name: "AppSec Tooling"
+    model_tier: cheap_text
+    instructions_file: .agents/prompts/appsec-tooling/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: security
+
+  - registry_id: threat-model
+    azure_agent_name: "Threat Modelling"
+    model_tier: top_reasoning
+    instructions_file: .agents/prompts/threat-model/system.md
+    tools:
+      - type: file_search
+    tags:
+      stream: security
+
+  - registry_id: cicd-engineer
+    azure_agent_name: "CI/CD Engineer"
+    model_tier: cheap_text
+    instructions_file: .agents/prompts/cicd-engineer/system.md
+    tools:
+      - type: file_search
+      - type: code_interpreter
+    tags:
+      stream: quality
+
+  - registry_id: adr-logger
+    azure_agent_name: "ADR Logger"
+    model_tier: cheap_text
+    instructions_file: .agents/prompts/adr-logger/system.md
+    tools:
+      - type: file_search
+    tags:
+      stream: quality
+
+  - registry_id: repo-steward
+    azure_agent_name: "Repo Steward"
+    model_tier: cheap_text
+    instructions_file: .agents/prompts/repo-steward/system.md
+    tools:
+      - type: file_search
+    tags:
+      stream: quality

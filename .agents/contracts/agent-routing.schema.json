@@ -1,0 +1,50 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Routing Rules Schema",
+  "description": "Defines default agent ownership per stream and path-based routing overrides. Consumed by .agents/routing.yml.",
+  "type": "object",
+  "required": ["schema_version", "defaults", "paths"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version, currently '1.0'."
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Default owner agent ID per stream. Applied when a task has no explicit owner and no path rule matches.",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Agent ID from .agents/registry/agents.v1.yml"
+      }
+    },
+    "paths": {
+      "type": "array",
+      "description": "Ordered path-based routing rules. First match wins.",
+      "items": {
+        "type": "object",
+        "required": ["match", "owner"],
+        "properties": {
+          "match": {
+            "type": "string",
+            "description": "Glob pattern relative to repo root (e.g. 'apps/web/**')."
+          },
+          "owner": {
+            "type": "string",
+            "description": "Agent ID that owns changes to paths matching this rule."
+          },
+          "reviewers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Agent IDs that must review changes to paths matching this rule."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional human-readable rationale for this rule."
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

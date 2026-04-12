@@ -1,0 +1,186 @@
+﻿{
+  "$schema": "https://platform.openai.com/docs/assistants",
+  "_comment": "OpenAI Assistants API agent definitions. Create these assistants via the platform UI or the /v1/assistants endpoint. Keep in sync with .agents/registry/agents.v1.yml.",
+  "assistants": [
+    {
+      "id_ref": "orchestrator",
+      "name": "Orchestrator / Programme Manager",
+      "model": "gpt-4o-mini",
+      "description": "Routes work to specialist agents; enforces phase gates, cost ceilings, and quality bars.",
+      "instructions_file": ".agents/prompts/orchestrator/system.md",
+      "tools": [{ "type": "file_search" }],
+      "metadata": { "stream": "orchestration", "registry_id": "orchestrator" }
+    },
+    {
+      "id_ref": "speckit-requirements",
+      "name": "Spec Kit Requirements",
+      "model": "gpt-4o-mini",
+      "description": "Drafts and refines requirements into testable specs.",
+      "instructions_file": ".agents/prompts/speckit-requirements/system.md",
+      "tools": [{ "type": "file_search" }],
+      "metadata": { "stream": "orchestration", "registry_id": "speckit-requirements" }
+    },
+    {
+      "id_ref": "architect",
+      "name": "Architecture",
+      "model": "gpt-4o",
+      "description": "Produces architecture artefacts, trade-offs, and ADR candidates.",
+      "instructions_file": ".agents/prompts/architect/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "architect" }
+    },
+    {
+      "id_ref": "app-typescript",
+      "name": "App (TypeScript/Node)",
+      "model": "gpt-4o",
+      "description": "Builds TypeScript/Node features with quality gates.",
+      "instructions_file": ".agents/prompts/app-typescript/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "app-typescript" }
+    },
+    {
+      "id_ref": "app-python",
+      "name": "App (Python)",
+      "model": "gpt-4o",
+      "description": "Builds Python features with quality gates.",
+      "instructions_file": ".agents/prompts/app-python/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "app-python" }
+    },
+    {
+      "id_ref": "app-java",
+      "name": "App (Java)",
+      "model": "gpt-4o",
+      "description": "Builds Java features with quality gates.",
+      "instructions_file": ".agents/prompts/app-java/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "app-java" }
+    },
+    {
+      "id_ref": "app-go",
+      "name": "App (Go)",
+      "model": "gpt-4o",
+      "description": "Builds Go features with quality gates.",
+      "instructions_file": ".agents/prompts/app-go/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "app-go" }
+    },
+    {
+      "id_ref": "app-dotnet",
+      "name": "App (C#/.NET)",
+      "model": "gpt-4o",
+      "description": "Builds C#/.NET features with quality gates.",
+      "instructions_file": ".agents/prompts/app-dotnet/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "app-dotnet" }
+    },
+    {
+      "id_ref": "frontend-carbon",
+      "name": "Front-End (IBM Carbon)",
+      "model": "gpt-4o",
+      "description": "Builds Carbon-compliant React UI with WCAG 2.1 AA accessibility.",
+      "instructions_file": ".agents/prompts/frontend-carbon/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "frontend-carbon" }
+    },
+    {
+      "id_ref": "windows-fluent",
+      "name": "Windows UI (Fluent)",
+      "model": "gpt-4o",
+      "description": "Builds Fluent UI Windows desktop experiences.",
+      "instructions_file": ".agents/prompts/windows-fluent/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "windows-fluent" }
+    },
+    {
+      "id_ref": "android-material",
+      "name": "Android UI (Material 3)",
+      "model": "gpt-4o",
+      "description": "Builds Material Design 3 Android UI.",
+      "instructions_file": ".agents/prompts/android-material/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "android-material" }
+    },
+    {
+      "id_ref": "ux-critic",
+      "name": "UX Critic",
+      "model": "gpt-4o-mini",
+      "description": "Reviews UX flows and accessibility against Carbon guidance.",
+      "instructions_file": ".agents/prompts/ux-critic/system.md",
+      "tools": [{ "type": "file_search" }],
+      "metadata": { "stream": "app", "registry_id": "ux-critic" }
+    },
+    {
+      "id_ref": "api-design",
+      "name": "API Design",
+      "model": "gpt-4o",
+      "description": "Defines OpenAPI contracts with versioning and compatibility rules.",
+      "instructions_file": ".agents/prompts/api-design/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "app", "registry_id": "api-design" }
+    },
+    {
+      "id_ref": "terraform-iac",
+      "name": "Terraform IaC",
+      "model": "gpt-4o",
+      "description": "Authors and validates Terraform modules and environments.",
+      "instructions_file": ".agents/prompts/terraform-iac/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "cloud", "registry_id": "terraform-iac" }
+    },
+    {
+      "id_ref": "azure-fullstack",
+      "name": "Azure (IaaS/PaaS/DevOps/Security)",
+      "model": "gpt-4o",
+      "description": "Designs and implements Azure infrastructure (Bicep/ARM) with security guardrails.",
+      "instructions_file": ".agents/prompts/azure-fullstack/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "cloud", "registry_id": "azure-fullstack" }
+    },
+    {
+      "id_ref": "appsec-tooling",
+      "name": "AppSec Tooling",
+      "model": "gpt-4o-mini",
+      "description": "Wires SAST/DAST scans and security CI gates.",
+      "instructions_file": ".agents/prompts/appsec-tooling/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "security", "registry_id": "appsec-tooling" }
+    },
+    {
+      "id_ref": "threat-model",
+      "name": "Threat Modelling",
+      "model": "gpt-4o",
+      "description": "Threat models data flows and defines mitigations with validation steps.",
+      "instructions_file": ".agents/prompts/threat-model/system.md",
+      "tools": [{ "type": "file_search" }],
+      "metadata": { "stream": "security", "registry_id": "threat-model" }
+    },
+    {
+      "id_ref": "cicd-engineer",
+      "name": "CI/CD Engineer",
+      "model": "gpt-4o-mini",
+      "description": "Maintains pipelines and developer experience.",
+      "instructions_file": ".agents/prompts/cicd-engineer/system.md",
+      "tools": [{ "type": "file_search" }, { "type": "code_interpreter" }],
+      "metadata": { "stream": "quality", "registry_id": "cicd-engineer" }
+    },
+    {
+      "id_ref": "adr-logger",
+      "name": "ADR Logger",
+      "model": "gpt-4o-mini",
+      "description": "Creates and maintains ADRs for decision traceability.",
+      "instructions_file": ".agents/prompts/adr-logger/system.md",
+      "tools": [{ "type": "file_search" }],
+      "metadata": { "stream": "quality", "registry_id": "adr-logger" }
+    },
+    {
+      "id_ref": "repo-steward",
+      "name": "Repo Steward",
+      "model": "gpt-4o-mini",
+      "description": "Maintains repo conventions, templates, and agent configuration artefacts.",
+      "instructions_file": ".agents/prompts/repo-steward/system.md",
+      "tools": [{ "type": "file_search" }],
+      "metadata": { "stream": "quality", "registry_id": "repo-steward" }
+    }
+  ]
+}

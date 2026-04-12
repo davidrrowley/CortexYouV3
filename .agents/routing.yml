@@ -1,0 +1,80 @@
+﻿schema_version: "1.0"
+
+defaults:
+  orchestration: orchestrator
+  app: app-typescript
+  cloud: azure-fullstack
+  data: app-python
+  ux: frontend-carbon
+  security: appsec-tooling
+  quality: cicd-engineer
+  platform: terraform-iac
+  devex: devex-tooling-scrum-master
+
+paths:
+  # ── Application code ──────────────────────────────────────────────────────
+  - match: "apps/web/**"
+    owner: frontend-carbon
+    reviewers: ["ux-critic"]
+    notes: "Web UI: Carbon design system enforced; a11y review required."
+
+  - match: "apps/api/**"
+    owner: app-typescript
+    reviewers: ["api-design"]
+    notes: "API surface: OpenAPI spec must be updated in same PR."
+
+  - match: "apps/windows/**"
+    owner: windows-fluent
+    reviewers: ["ux-critic"]
+    notes: "Windows desktop UI: Fluent UI and keyboard/screen-reader validation required."
+
+  - match: "apps/android/**"
+    owner: android-material
+    reviewers: ["ux-critic"]
+    notes: "Android UI: Material Design 3; TalkBack validation required."
+
+  # ── Packages ──────────────────────────────────────────────────────────────
+  - match: "packages/**"
+    owner: app-typescript
+    reviewers: ["repo-steward"]
+    notes: "Shared packages: semver and changelog compliance required."
+
+  # ── Infrastructure ────────────────────────────────────────────────────────
+  - match: "infra/**"
+    owner: terraform-iac
+    reviewers: ["cloud-scrum-master"]
+    notes: "IaC: no apply/destroy without explicit plan approval."
+
+  # ── Specs and planning artefacts ──────────────────────────────────────────
+  - match: "specs/**"
+    owner: speckit-requirements
+    reviewers: ["architect"]
+    notes: "Spec changes: architect sign-off required; CI validates task-block format."
+
+  # ── Documentation ─────────────────────────────────────────────────────────
+  - match: "docs/architecture/**"
+    owner: architect
+    reviewers: ["threat-model"]
+    notes: "Architecture docs: threat model review required for any new data flows."
+
+  - match: "docs/security/**"
+    owner: appsec-tooling
+    reviewers: ["threat-model"]
+    notes: "Security docs: threat model agent must co-review."
+
+  - match: "docs/adr/**"
+    owner: adr-logger
+    reviewers: ["architect"]
+    notes: "ADRs: sequential numbering, index update, and architect review required."
+
+  # ── CI/CD and repo configuration ──────────────────────────────────────────
+  - match: ".github/**"
+    owner: cicd-engineer
+    reviewers: ["appsec-tooling"]
+    notes: "Pipeline changes: security gates must not be downgraded without explicit approval."
+
+  # ── Agent configuration ───────────────────────────────────────────────────
+  - match: ".agents/**"
+    owner: repo-steward
+    reviewers: ["orchestrator"]
+    notes: "Agent artefacts: registry and routing changes require orchestrator review."
