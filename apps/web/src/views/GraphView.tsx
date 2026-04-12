@@ -207,7 +207,7 @@ export default function GraphView() {
             'border-width': 3,
             'font-size': '11px',
             'font-weight': 700 as unknown as string,
-          },
+          } as unknown as cytoscape.Css.Node,
         },
         // ── Tag nodes — smaller, faint ───────────────────────────────────
         {
