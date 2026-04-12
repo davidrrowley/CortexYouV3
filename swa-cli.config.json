@@ -1,0 +1,13 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "cortexyou": {
+      "appLocation": "apps/web",
+      "outputLocation": "public",
+      "apiLanguage": "node",
+      "apiVersion": "20",
+      "devServerUrl": "http://localhost:3000",
+      "apiDevserverUrl": "http://localhost:7071"
+    }
+  }
+}

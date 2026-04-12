@@ -1,0 +1,821 @@
+CortexYou Specification v1
+1. Product intent
+
+CortexYou is a personal knowledge capture and exploration system. Its purpose is to let a single user quickly capture things that spark interest, including notes, links, images, excerpts and lightweight reflections, then organise and connect those items over time into a navigable knowledge graph.
+
+The system is not intended to be a team workspace, an enterprise knowledge platform, or a chat-memory system. It is a personal second-brain style application with an emphasis on low friction capture, durability of data, and progressive structure.
+
+The core design principle is that capture must be simple and immediate, while structure can be added gradually. The graph is there to help the user notice patterns, clusters, gaps, and recurring themes. It is not there to infer meaning automatically at all costs.
+
+2. Product goals
+
+The agent should build for the following goals, in this order.
+
+First, the system must make capture easy from any device with a browser.
+
+Second, the system must preserve user ownership of data through portable file formats and simple storage patterns.
+
+Third, the system must support explicit and inspectable relationships between captured items.
+
+Fourth, the system must provide a graph visualisation that remains understandable at small to medium scale.
+
+Fifth, the system must be deployable cheaply and simply on Azure.
+
+3. Non-goals for v1
+
+Do not build any of the following into the first version.
+
+Do not use Cosmos DB, Neo4j, or any other database that materially increases operational overhead.
+
+Do not build native Windows or Android apps.
+
+Do not build multi-user collaboration.
+
+Do not build fully autonomous AI curation or automated rewriting of the knowledge base.
+
+Do not build contradiction detection, semantic compression, or complex retrieval frameworks.
+
+Do not optimise for internet-scale content ingestion.
+
+4. Target users
+
+There is one primary user: the owner of the system.
+
+The user captures things that interest him, wants to revisit them later, wants to connect them to themes or concepts, and wants to see those relationships visually. The user is willing to add structure over time, but not willing to fight the system in order to capture content.
+
+5. Delivery philosophy
+
+The implementation should be static-first, with the thinnest possible backend.
+
+The frontend should be the main product surface.
+
+The backend should exist only for privileged operations such as authentication context, upload token issuance, and controlled read or write operations where the browser alone is insufficient.
+
+The storage model should be blob-based and file-oriented. The system should favour JSON and markdown-compatible structures over opaque internal formats.
+
+6. Recommended technology stack
+
+Build the application with the following stack unless there is a strong implementation reason not to.
+
+Frontend:
+React with TypeScript, ideally using Next.js in static export friendly mode or Vite if that proves simpler for Azure Static Web Apps.
+
+Hosting:
+Azure Static Web Apps.
+
+Backend:
+Azure Functions in TypeScript, linked to the static app as /api.
+
+Storage:
+Azure Blob Storage.
+
+Authentication:
+Azure Static Web Apps built-in authentication using GitHub or Microsoft Entra ID. For a purely personal deployment, keep authentication simple and restrict access to authenticated users only.
+
+Graph visualisation:
+Cytoscape.js.
+
+Optional offline support:
+IndexedDB in the browser for queued offline capture.
+
+Search:
+Client-side search over derived index.json initially. Do not introduce a dedicated search service in v1.
+
+Styling:
+Keep styling clean, responsive, and minimal. The product is a personal tool, not a marketing site.
+
+7. High-level architecture
+
+The system should be implemented as five logical parts.
+
+7.1 Frontend app
+
+The frontend is the primary user experience. It must provide:
+
+A home/dashboard view.
+
+A quick capture flow.
+
+A browse/search view.
+
+An item detail view.
+
+A concepts or themes view.
+
+A graph view.
+
+A settings or admin view for export and maintenance operations.
+
+7.2 API layer
+
+The API layer must remain thin. It should provide only the following responsibilities:
+
+Issue short-lived SAS tokens for upload to Blob Storage.
+
+Validate authenticated user access.
+
+Create, update, fetch, and delete content metadata when direct static access is not appropriate.
+
+Trigger rebuild or regeneration of derived files such as index.json and graph.json.
+
+Perform export packaging if required.
+
+7.3 Storage layer
+
+Blob Storage is the source of persistence. Use containers with a structure similar to the following:
+
+/raw/ for uploaded images and original artefacts
+/items/ for canonical item JSON documents
+/derived/ for index and graph files
+/exports/ for versioned export bundles
+/logs/ for append-only event logs
+
+7.4 Derived artefacts
+
+The system should generate lightweight derived artefacts to support fast browsing and graph loading:
+
+index.json containing summary metadata for all items
+
+graph.json containing nodes and edges for graph rendering
+
+Potentially concepts.json if that makes client loading simpler
+
+These are caches, not the source of truth.
+
+7.5 Authentication and access control
+
+The app must not expose personal content publicly.
+
+Authenticated access is required for all content routes except potentially the login page.
+
+Backend APIs must validate identity and refuse unauthorised access.
+
+Blob uploads must use short-lived SAS tokens scoped to specific operations and paths.
+
+8. Information model
+
+The coding agent should use a deliberately small and extensible information model.
+
+8.1 Primary entity types
+
+There are three core node types in v1.
+
+Spark
+
+A Spark is a captured item that triggered interest. This is the main entry type.
+
+Examples:
+A photo
+A URL
+A note
+A quote
+A screenshot
+A short thought
+A paragraph copied from somewhere
+
+Concept
+
+A Concept is a recurring idea, theme, or topic that multiple Sparks can relate to.
+
+Examples:
+“AI observability”
+“Welsh identity”
+“Architecture patterns”
+“Moments worth writing about”
+
+Area
+
+An Area is a broader organising bucket. This is optional in v1 but should be supported by the model.
+
+Examples:
+Personal
+Work
+Podcast
+Writing
+Technology
+Health
+
+8.2 Edge types
+
+Relationships should be explicit and inspectable.
+
+Supported edge types in v1:
+
+relates_to
+supports
+examples
+inspired_by
+belongs_to
+
+Avoid adding more until the UI and workflow prove the need.
+
+8.3 Spark schema
+
+Each Spark must support at least the following fields:
+
+{
+  "id": "spark_01HXYZ...",
+  "type": "spark",
+  "title": "string",
+  "summary": "string",
+  "whyItMatters": "string",
+  "contentType": "note | link | image | quote | mixed",
+  "bodyMarkdown": "string",
+  "sourceUrl": "string | null",
+  "media": [
+    {
+      "kind": "image",
+      "blobPath": "raw/2026/04/filename.jpg",
+      "mimeType": "image/jpeg",
+      "width": 0,
+      "height": 0
+    }
+  ],
+  "tags": ["string"],
+  "conceptIds": ["concept_..."],
+  "areaIds": ["area_..."],
+  "status": "inbox | reviewed | distilled | archived",
+  "createdAt": "ISO8601",
+  "updatedAt": "ISO8601",
+  "capturedAt": "ISO8601",
+  "links": [
+    {
+      "targetId": "concept_...",
+      "type": "relates_to",
+      "createdBy": "user"
+    }
+  ],
+  "metadata": {
+    "device": "string",
+    "captureMethod": "quick-add | upload | share | manual",
+    "sourceTitle": "string | null"
+  }
+}
+8.4 Concept schema
+{
+  "id": "concept_01HXYZ...",
+  "type": "concept",
+  "name": "string",
+  "description": "string",
+  "tags": ["string"],
+  "createdAt": "ISO8601",
+  "updatedAt": "ISO8601"
+}
+8.5 Area schema
+{
+  "id": "area_01HXYZ...",
+  "type": "area",
+  "name": "string",
+  "description": "string",
+  "createdAt": "ISO8601",
+  "updatedAt": "ISO8601"
+}
+9. File structure and persistence model
+
+The agent should store canonical data as one JSON document per entity.
+
+Suggested structure:
+
+/items/sparks/{id}.json
+/items/concepts/{id}.json
+/items/areas/{id}.json
+/raw/{yyyy}/{mm}/{filename}
+/derived/index.json
+/derived/graph.json
+/logs/events/{yyyy}/{mm}/{dd}.jsonl
+/exports/{timestamp}/bundle.zip
+
+This structure should be human-comprehensible and exportable.
+
+The app must never depend on derived files as the only copy of information.
+
+10. User experience requirements
+10.1 Home or dashboard
+
+The home page should show:
+
+Recent Sparks
+
+Recently updated Concepts
+
+A small summary of counts
+
+Quick actions such as Add Note, Add Link, Upload Image, Open Graph
+
+Optionally, a small graph preview or cluster summary
+
+10.2 Quick capture
+
+Quick capture is central to the product and must be friction-light.
+
+The user should be able to create a Spark with the following minimal fields:
+
+Title or short description
+
+Optional URL
+
+Optional note text
+
+Optional image upload
+
+Optional tags
+
+Optional “why this matters”
+
+This flow must work well on mobile and desktop.
+
+10.3 Browse view
+
+The browse view should support:
+
+Filter by content type
+
+Filter by tag
+
+Filter by status
+
+Filter by concept
+
+Sort by newest or updated
+
+Full-text search over title, summary, bodyMarkdown, tags, and whyItMatters
+
+10.4 Item detail view
+
+Each Spark detail page should show:
+
+Primary content
+
+Associated media
+
+Metadata
+
+Linked concepts and areas
+
+Outgoing and incoming relationships
+
+An edit action
+
+A section for suggested links, if implemented later
+
+10.5 Concepts view
+
+The concepts view should allow the user to:
+
+See all concepts
+
+Open one concept and view connected Sparks
+
+Create new concepts
+
+Link or unlink Sparks to concepts
+
+10.6 Graph view
+
+The graph view should render nodes and edges using Cytoscape.js.
+
+The user must be able to:
+
+Zoom and pan
+
+Click a node to inspect it
+
+Filter graph by node type
+
+Filter graph by tags or concept
+
+Hide low-value nodes such as tags if needed
+
+Switch between at least two layouts
+
+The graph must remain usable rather than overly decorative.
+
+11. Functional requirements
+11.1 Authentication
+
+The system must require authentication before exposing user content.
+
+The system should support one sign-in provider initially. Simplicity is more important than optionality.
+
+11.2 Capture and create
+
+The system must support creating Sparks from:
+
+Text only
+
+URL plus text
+
+Image plus text
+
+Image only with minimal metadata
+
+11.3 Uploads
+
+Uploads must go directly from browser to Blob Storage using SAS tokens issued by the API.
+
+The API must validate:
+
+Authenticated identity
+
+Target path
+
+Allowed file types
+
+Maximum size
+
+Allowed operation duration
+
+11.4 Edit and delete
+
+The user must be able to edit and soft-delete Sparks and Concepts.
+
+Soft delete is preferred initially, so mistakes are recoverable.
+
+11.5 Relationship management
+
+The user must be able to create and remove explicit relationships between items.
+
+The UI should make relationship creation simple from an item detail page.
+
+11.6 Export
+
+The system must provide a manual export action that generates a versioned bundle containing:
+
+All item JSON documents
+
+All related media
+
+Derived index and graph files
+
+Optionally a manifest file with counts and timestamps
+
+11.7 Logging
+
+The system must append an event log entry for meaningful actions such as create, update, delete, export, and relationship changes.
+
+This gives recoverability and traceability.
+
+12. API specification
+
+The API should be minimal and REST-like.
+
+12.1 Auth/session
+
+GET /api/me
+
+Returns authenticated user metadata and roles.
+
+12.2 Upload token issuance
+
+POST /api/uploads/sas
+
+Request:
+
+{
+  "filename": "example.jpg",
+  "mimeType": "image/jpeg",
+  "sizeBytes": 123456
+}
+
+Response:
+
+{
+  "uploadUrl": "https://...sas...",
+  "blobPath": "raw/2026/04/example.jpg",
+  "expiresAt": "ISO8601"
+}
+12.3 Sparks
+
+GET /api/sparks
+Supports filtering and pagination.
+
+GET /api/sparks/{id}
+
+POST /api/sparks
+
+PUT /api/sparks/{id}
+
+DELETE /api/sparks/{id}
+
+12.4 Concepts
+
+GET /api/concepts
+
+GET /api/concepts/{id}
+
+POST /api/concepts
+
+PUT /api/concepts/{id}
+
+DELETE /api/concepts/{id}
+
+12.5 Relationships
+
+POST /api/relationships
+
+Request:
+
+{
+  "sourceId": "spark_...",
+  "targetId": "concept_...",
+  "type": "relates_to"
+}
+
+DELETE /api/relationships
+
+12.6 Derived artefacts
+
+POST /api/rebuild/index
+
+POST /api/rebuild/graph
+
+These can be manual in v1, though automatic regeneration after changes is acceptable.
+
+12.7 Export
+
+POST /api/export
+
+Returns job status or immediate response depending on implementation.
+
+GET /api/export/latest
+
+13. Derived graph generation rules
+
+The graph should not be created by inference-heavy logic in v1.
+
+Build graph.json from the following rules.
+
+Each Spark becomes a node.
+
+Each Concept becomes a node.
+
+Each Area becomes a node if areas are enabled.
+
+Each explicit relationship becomes an edge.
+
+Optionally, tags can become nodes, but make this configurable because tag graphs become noisy quickly.
+
+Graph node example:
+
+{
+  "data": {
+    "id": "spark_123",
+    "label": "Interesting article on graph thinking",
+    "type": "spark",
+    "status": "reviewed"
+  }
+}
+
+Graph edge example:
+
+{
+  "data": {
+    "id": "edge_456",
+    "source": "spark_123",
+    "target": "concept_999",
+    "type": "relates_to"
+  }
+}
+14. Search behaviour
+
+Initial search can be implemented without a dedicated search platform.
+
+The agent should generate index.json containing denormalised item summaries for fast client-side search.
+
+Search should cover:
+
+Title
+
+Summary
+
+WhyItMatters
+
+BodyMarkdown
+
+Tags
+
+Concept names
+
+Search quality does not need to be perfect in v1. Reliability and speed matter more.
+
+15. Offline and mobile considerations
+
+Offline capability is optional for the first cut, but the architecture should not block it.
+
+If implemented, use IndexedDB as a local queue for pending captures.
+
+A pending capture should include text fields and local file references where supported.
+
+When connectivity returns, the app should attempt to upload and then commit the canonical record.
+
+Do not overcomplicate conflict resolution. Assume one user and rare concurrent edits.
+
+Mobile capture must be responsive and camera-friendly. The capture screen should work well in portrait mode.
+
+16. Security requirements
+
+The system stores personal material, so basic security must be taken seriously even though this is not an enterprise application.
+
+Requirements:
+
+All content routes require authentication.
+
+API endpoints validate authenticated identity.
+
+SAS tokens are short-lived and scoped narrowly.
+
+Restrict upload MIME types and file size.
+
+Sanitise any rendered markdown.
+
+Do not trust client-provided metadata blindly.
+
+Do not expose storage account keys to the client.
+
+Keep secrets in Azure configuration, not source control.
+
+17. Operational requirements
+
+The deployment should be simple enough to maintain casually.
+
+Requirements:
+
+One-command or one-workflow deploy from GitHub to Azure Static Web Apps
+
+Environment variables documented clearly
+
+Blob container creation script included
+
+Local development instructions included
+
+Export and recovery path documented
+
+No dependency on always-on infrastructure beyond Azure-managed services already in use
+
+18. Observability and maintenance
+
+Keep this light.
+
+The agent should add:
+
+Basic frontend error boundary handling
+
+API logging
+
+Upload failure reporting
+
+A small admin page showing index build status, graph build status, and last export time
+
+This is a personal app. The point is enough visibility to debug, not enterprise telemetry sprawl.
+
+19. Suggested implementation phases
+Phase 1: Foundation
+
+Set up frontend shell, auth, storage, API skeleton, and deployment pipeline.
+
+Done when:
+You can sign in
+You can view the app shell
+You can issue an upload token
+You can write and read a test JSON record
+
+Phase 2: Core capture
+
+Build quick add for note, link, and image.
+
+Done when:
+You can create Sparks from desktop and mobile
+Uploads work
+Items are saved to storage
+Recent items list loads correctly
+
+Phase 3: Browse and detail
+
+Build browse view, search, and item detail page.
+
+Done when:
+You can find items
+You can edit items
+You can inspect metadata and media
+
+Phase 4: Concepts and linking
+
+Build concepts CRUD and explicit linking.
+
+Done when:
+You can create concepts
+You can link Sparks to concepts
+Linked views work both ways
+
+Phase 5: Graph
+
+Generate graph.json and render graph view with filters.
+
+Done when:
+Graph loads reliably
+Node selection works
+Filters reduce visual noise
+
+Phase 6: Export and safeguards
+
+Add export packaging and event logging.
+
+Done when:
+You can generate a recovery bundle
+You can inspect an append-only event log
+The app is meaningfully recoverable
+
+20. Acceptance criteria for v1
+
+The build should be considered successful when all of the following are true.
+
+The user can authenticate and access the app privately.
+
+The user can quickly create Sparks with note text, URLs, and images.
+
+The user can browse and search captures.
+
+The user can create Concepts and link Sparks to them.
+
+The user can open a graph that visualises these relationships.
+
+The app runs on Azure Static Web Apps with Azure Functions and Blob Storage.
+
+The app can export its contents in a portable bundle.
+
+The solution does not require Cosmos DB or any heavyweight database.
+
+21. Design constraints for the coding agent
+
+The coding agent should favour the following behaviours while building.
+
+Prefer boring, maintainable choices over clever architecture.
+
+Keep the domain model small.
+
+Keep storage transparent.
+
+Keep AI optional and assistive only.
+
+Do not introduce external services unless they remove more complexity than they add.
+
+Do not let the graph drive the whole product. Capture and retrieval come first.
+
+22. Nice-to-have items after v1
+
+These are valid future enhancements, but should not be built before the core flow is stable.
+
+Bookmarklet or browser extension for link capture
+
+Web Share Target support where browser support permits
+
+Suggested relationships based on text similarity
+
+Auto-tag suggestions
+
+Weekly review workflow
+
+Timeline view
+
+Distillation workflow from Spark to Concept note
+
+Markdown export compatibility for Obsidian or similar tools
+
+23. Prompt to give the coding agent
+
+You can give the following directly to a coding agent:
+
+Build CortexYou as a personal, authenticated, static-first web app on Azure Static Web Apps with a minimal Azure Functions backend and Azure Blob Storage for persistence.
+
+The product is a personal second-brain style system for capturing things that spark interest and progressively connecting them into a knowledge graph.
+
+Prioritise low complexity, portability of data, and a clean capture workflow.
+
+Implement:
+1. Authenticated web app shell
+2. Quick capture for note, link, and image
+3. Blob upload via short-lived SAS token issued by API
+4. Canonical storage as JSON files in blob storage
+5. Browse/search view over derived index.json
+6. Concepts CRUD
+7. Explicit relationships between Sparks and Concepts
+8. Graph visualisation using Cytoscape.js from derived graph.json
+9. Export bundle of all content and media
+10. Append-only event logging
+
+Do not use Cosmos DB, Neo4j, native mobile apps, multi-user collaboration, or complex AI memory frameworks.
+
+Use TypeScript throughout unless there is a strong reason not to.
+
+Keep the system modular, well-documented, and easy to deploy. Include:
+- project structure
+- local setup instructions
+- Azure deployment instructions
+- environment variable documentation
+- storage container bootstrap script
+- sample seed data
+- tests for core data and API behaviour
+
+Treat canonical JSON files in blob storage as the source of truth. Derived files are caches only.
+
+If you want, I can turn this into a proper spec.md in spec-kit format, with accompanying plan.md and tasks.md, so you can drop it straight into your repo workflow.

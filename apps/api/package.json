@@ -1,0 +1,25 @@
+{
+  "name": "cortexyou-api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "func start",
+    "dev": "npm run build && func start"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.3.0",
+    "@azure/identity": "^4.2.0",
+    "@azure/storage-blob": "12.26.0",
+    "archiver": "^7.0.0",
+    "openai": "^6.34.0",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.2",
+    "@types/node": "^20.12.5",
+    "typescript": "^5.4.5"
+  }
+}

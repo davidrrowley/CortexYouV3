@@ -1,0 +1,39 @@
+{
+  "name": "cortexyou-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@carbon/icons-react": "^11.46.0",
+    "@carbon/react": "^1.68.0",
+    "@carbon/styles": "^1.68.0",
+    "@tanstack/react-query": "^5.29.0",
+    "cytoscape": "^3.29.0",
+    "cytoscape-fcose": "^2.2.0",
+    "date-fns": "^3.6.0",
+    "dompurify": "^3.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.22.3",
+    "ulid": "^2.3.0",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.19.14",
+    "@types/dompurify": "^3.0.5",
+    "@types/node": "^20.12.5",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "sass": "^1.74.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10"
+  }
+}
