@@ -9,9 +9,9 @@
 import { BlobServiceClient } from '@azure/storage-blob';
 import { randomUUID } from 'crypto';
 
-const connStr = 'UseDevelopmentStorage=true';
+const connStr = process.env.STORAGE_CONNECTION_STRING ?? 'UseDevelopmentStorage=true';
 const client = BlobServiceClient.fromConnectionString(connStr);
-const container = client.getContainerClient('cortexyou-items');
+const container = client.getContainerClient(process.env.STORAGE_CONTAINER_ITEMS ?? 'cortexyou-items');
 
 // Use the first (oldest-created) spark IDs — duplicates from double-seed are ignored
 const SPARK_IDS = {
