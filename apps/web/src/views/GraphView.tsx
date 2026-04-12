@@ -11,11 +11,12 @@ import {
   SkeletonPlaceholder,
   Tag,
 } from '@carbon/react';
-import { ZoomIn, ZoomOut, Maximize, Reset } from '@carbon/icons-react';
+import { ZoomIn, ZoomOut, Maximize, Reset, Chat } from '@carbon/icons-react';
 import cytoscape, { Core } from 'cytoscape';
 import fcose from 'cytoscape-fcose';
 import { listSparks, listConcepts } from '../api/client';
 import type { Spark, Concept, GraphArtefact } from '../types';
+import ChatPanel from '../components/ChatPanel';
 
 cytoscape.use(fcose);
 
@@ -71,6 +72,8 @@ export default function GraphView() {
     label: string;
     type: string;
   } | null>(null);
+
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Fetch all sparks and concepts to build graph locally (no derived file needed)
   const sparksQuery = useQuery({
@@ -374,6 +377,7 @@ export default function GraphView() {
   }
 
   return (
+    <>
     <Grid condensed style={{ height: '100vh' }}>
       <Column sm={4} md={8} lg={16}>
         <div style={{ paddingTop: '1rem', paddingBottom: '0.75rem' }}>
@@ -427,6 +431,14 @@ export default function GraphView() {
           </div>
           <Button size="sm" kind="secondary" onClick={runLayout} renderIcon={Reset}>
             Re-layout
+          </Button>
+          <Button
+            size="sm"
+            kind={chatOpen ? 'primary' : 'tertiary'}
+            renderIcon={Chat}
+            onClick={() => setChatOpen((o) => !o)}
+          >
+            Chat with graph
           </Button>
           <Button
             size="sm"
@@ -568,5 +580,7 @@ export default function GraphView() {
         )}
       </Column>
     </Grid>
+    <ChatPanel isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+    </>
   );
 }

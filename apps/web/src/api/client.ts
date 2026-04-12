@@ -113,6 +113,19 @@ export const getSasToken = (body: SasRequest) =>
     body: JSON.stringify(body),
   });
 
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export const sendChatMessage = (messages: ChatMessage[]) =>
+  call<{ reply: string }>('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({ messages }),
+  });
+
 export async function uploadFileDirect(
   file: File,
 ): Promise<{ blobPath: string }> {
