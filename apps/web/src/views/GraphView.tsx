@@ -158,6 +158,7 @@ export default function GraphView() {
         // ── Base node ────────────────────────────────────────────────────
         {
           selector: 'node',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           style: {
             label: 'data(label)',
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -169,7 +170,7 @@ export default function GraphView() {
             opacity: (ele: any) => STATUS_OPACITY[ele.data('status') ?? 'inbox'] ?? 1,
             color: '#ffffff',
             'font-size': '10px',
-            'font-weight': '600',
+            'font-weight': 600 as unknown as string,
             'text-valign': 'center',
             'text-halign': 'center',
             'text-wrap': 'ellipsis',
@@ -189,15 +190,15 @@ export default function GraphView() {
               if (type === 'area') return 44;
               return 32;
             },
-            'shadow-blur': 12,
+            'shadow-blur': 12 as unknown as string,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            'shadow-color': (ele: any) => NODE_COLORS[ele.data('type')] ?? '#888',
-            'shadow-opacity': 0.5,
-            'shadow-offset-x': 0,
-            'shadow-offset-y': 0,
+            'shadow-color': ((ele: any) => NODE_COLORS[ele.data('type')] ?? '#888') as unknown as string,
+            'shadow-opacity': 0.5 as unknown as string,
+            'shadow-offset-x': 0 as unknown as string,
+            'shadow-offset-y': 0 as unknown as string,
             'transition-property': 'border-width, border-color, shadow-blur, opacity',
             'transition-duration': 150,
-          },
+          } as unknown as cytoscape.Css.Node,
         },
         // ── Concept nodes — larger, pill-ish ─────────────────────────────
         {
@@ -205,7 +206,7 @@ export default function GraphView() {
           style: {
             'border-width': 3,
             'font-size': '11px',
-            'font-weight': '700',
+            'font-weight': 700 as unknown as string,
           },
         },
         // ── Tag nodes — smaller, faint ───────────────────────────────────
@@ -221,10 +222,10 @@ export default function GraphView() {
           selector: 'node:active',
           style: {
             'border-width': 4,
-            'shadow-blur': 24,
-            'shadow-opacity': 0.9,
+            'shadow-blur': 24 as unknown as string,
+            'shadow-opacity': 0.9 as unknown as string,
             opacity: 1,
-          },
+          } as unknown as cytoscape.Css.Node,
         },
         // ── Selected node ────────────────────────────────────────────────
         {
@@ -232,10 +233,10 @@ export default function GraphView() {
           style: {
             'border-width': 4,
             'border-color': '#ffffff',
-            'shadow-blur': 28,
-            'shadow-opacity': 1,
+            'shadow-blur': 28 as unknown as string,
+            'shadow-opacity': 1 as unknown as string,
             opacity: 1,
-          },
+          } as unknown as cytoscape.Css.Node,
         },
         // ── Dimmed (neighbour-highlight) ─────────────────────────────────
         {
