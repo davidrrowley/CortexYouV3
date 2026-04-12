@@ -21,7 +21,7 @@ const now = new Date().toISOString();
 
 const sparks = [
   {
-    id: makeId(),
+    id: 'dc005e6d-d34a-483d-bce5-9aadc74fd73e',
     type: 'spark',
     title: 'Conversations and actions we avoid cause stress',
     summary: 'It is often the conversation we haven\'t had and actions we haven\'t done that stresses us out.',
@@ -41,7 +41,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'OneNote Quotes' },
   },
   {
-    id: makeId(),
+    id: '637f191c-5311-421a-a642-d476e36c934e',
     type: 'spark',
     title: 'Mistakes brought to lessons, not lessons to people',
     summary: 'It\'s not what lessons bring to people, it\'s the mistakes they bring to the lessons.',
@@ -61,7 +61,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'OneNote Quotes' },
   },
   {
-    id: makeId(),
+    id: 'c2a1ab93-f45b-4922-9d87-78ba2dca3741',
     type: 'spark',
     title: 'Leadership values: Belonging, Mastery, Integrity',
     summary: 'Leadership values shared at an offsite: Belonging, Mastery and Integrity.',
@@ -81,7 +81,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'LinkedIn' },
   },
   {
-    id: makeId(),
+    id: '320c0d23-9ba2-40d4-9200-f630d145bc06',
     type: 'spark',
     title: '7 Surprising Traits of Highly Strategic Thinkers',
     summary: 'Strategic thinkers are: bad with detail, naturally contrarian, action oriented, radically honest, take responsibility, great writers, and kinda unprofessional.',
@@ -110,7 +110,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'OneNote Quotes' },
   },
   {
-    id: makeId(),
+    id: '4caf9d36-81f2-4c8a-bca5-68e6e25a09a6',
     type: 'spark',
     title: 'Meet emotion with emotion, rational with rational',
     summary: 'Meet emotion with emotion, meet rational with rational — you don\'t have to be honest \'in the moment\'.',
@@ -130,7 +130,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'Simon Sinek' },
   },
   {
-    id: makeId(),
+    id: '065147dd-79e8-456b-baf6-01e04a1384f4',
     type: 'spark',
     title: 'Uncommunicated expectations are premeditated resentments',
     summary: 'Uncommunicated expectations are premeditated resentments.',
@@ -150,7 +150,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'Neil Strauss' },
   },
   {
-    id: makeId(),
+    id: '4b25b89f-1ebf-4a48-8b43-d95825446820',
     type: 'spark',
     title: 'IT will be the HR for AI agents',
     summary: 'In the future, IT departments will be the \'HR\' for AI agents — today managing software, tomorrow onboarding AI agents.',
@@ -170,7 +170,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'Jensen Huang — CES 2025' },
   },
   {
-    id: makeId(),
+    id: '8898f6ba-92b4-403a-bc56-13c155d01eb3',
     type: 'spark',
     title: 'Comparison is the thief of joy',
     summary: 'Comparison is the thief of joy.',
@@ -190,7 +190,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'OneNote Quotes' },
   },
   {
-    id: makeId(),
+    id: '1620f0f8-9b85-4417-aead-2f0879a39aee',
     type: 'spark',
     title: 'Ship to Learn — don\'t ship perfect',
     summary: '"Ship to Learn" — don\'t ship perfect, ship, get feedback, adjust.',
@@ -210,7 +210,7 @@ const sparks = [
     metadata: { device: 'import', captureMethod: 'manual', sourceTitle: 'GitHub' },
   },
   {
-    id: makeId(),
+    id: '2c0ac195-2d51-48a1-8ad2-0c4949492ca8',
     type: 'spark',
     title: 'Designer by heart, developer by choice',
     summary: 'Designer by heart, developer by choice.',
@@ -231,7 +231,25 @@ const sparks = [
   },
 ];
 
-console.log(`\nSeeding ${sparks.length} sparks into Azurite...\n`);
+// Remove duplicate blobs: same title but different ID (from earlier random-UUID seed runs)
+const canonicalTitleToId = new Map(sparks.map(s => [s.title, s.id]));
+let cleaned = 0;
+for await (const blob of container.listBlobsFlat({ prefix: 'sparks/' })) {
+  const blobClient = container.getBlobClient(blob.name);
+  try {
+    const buf = await blobClient.downloadToBuffer();
+    const existing = JSON.parse(buf.toString('utf-8'));
+    const canonicalId = canonicalTitleToId.get(existing.title);
+    if (canonicalId && canonicalId !== existing.id) {
+      await container.deleteBlob(blob.name);
+      console.log(`  removed duplicate: "${existing.title}" (${existing.id})`);
+      cleaned++;
+    }
+  } catch { /* skip unreadable blobs */ }
+}
+if (cleaned) console.log(`\nRemoved ${cleaned} duplicate(s).\n`);
+
+console.log(`\nSeeding ${sparks.length} sparks...\n`);
 
 let ok = 0;
 for (const spark of sparks) {

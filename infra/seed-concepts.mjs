@@ -31,7 +31,7 @@ const now = new Date().toISOString();
 
 const concepts = [
   {
-    id: randomUUID(),
+    id: 'concept-0001-effective-communication',
     type: 'concept',
     name: 'Effective Communication',
     description: 'The practice of communicating clearly, honestly, and at the right time — matching the register (emotional vs rational) of the other person, setting explicit expectations, and having difficult conversations rather than avoiding them.',
@@ -40,7 +40,7 @@ const concepts = [
     updatedAt: now,
   },
   {
-    id: randomUUID(),
+    id: 'concept-0002-leadership',
     type: 'concept',
     name: 'Leadership',
     description: 'The values, behaviours, and mindsets that define effective leaders — including radical honesty, taking ownership, setting and sharing values, and developing emotional intelligence.',
@@ -49,7 +49,7 @@ const concepts = [
     updatedAt: now,
   },
   {
-    id: randomUUID(),
+    id: 'concept-0003-learning-from-mistakes',
     type: 'concept',
     name: 'Learning From Mistakes',
     description: 'The idea that the most powerful learning comes not from lessons themselves, but from the mistakes and lived experience people bring to them. Closely tied to a "ship to learn" iteration mindset.',
@@ -58,7 +58,7 @@ const concepts = [
     updatedAt: now,
   },
   {
-    id: randomUUID(),
+    id: 'concept-0004-strategic-thinking',
     type: 'concept',
     name: 'Strategic Thinking',
     description: 'A mode of thinking characterised by zooming out, contrarian questioning, action-orientation, and radical honesty. Strategy is communication — it is less a skill and more a personality type.',
@@ -67,7 +67,7 @@ const concepts = [
     updatedAt: now,
   },
   {
-    id: randomUUID(),
+    id: 'concept-0005-ai-future-of-work',
     type: 'concept',
     name: 'AI & Future of Work',
     description: 'The emerging shift in how organisations will manage intelligence — from software to AI agents. IT departments become the "HR" for agents, onboarding and governing them like employees.',
@@ -76,7 +76,7 @@ const concepts = [
     updatedAt: now,
   },
   {
-    id: randomUUID(),
+    id: 'concept-0006-mindset-identity',
     type: 'concept',
     name: 'Mindset & Identity',
     description: 'How we define ourselves and measure our progress shapes our wellbeing and performance. Comparison undermines joy; choosing an identity (designer by heart, developer by choice) gives direction.',
@@ -85,7 +85,7 @@ const concepts = [
     updatedAt: now,
   },
   {
-    id: randomUUID(),
+    id: 'concept-0007-shipping-iteration',
     type: 'concept',
     name: 'Shipping & Iteration',
     description: 'The discipline of releasing early to create feedback loops rather than perfecting in isolation. "Ship to Learn" — progress comes from action, feedback, and adjustment.',

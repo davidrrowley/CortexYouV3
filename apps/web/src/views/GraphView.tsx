@@ -65,6 +65,13 @@ export default function GraphView() {
     type: string;
   } | null>(null);
 
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    label: string;
+    type: string;
+  } | null>(null);
+
   // Fetch all sparks and concepts to build graph locally (no derived file needed)
   const sparksQuery = useQuery({
     queryKey: ['sparks', { sort: 'createdAt', order: 'desc', limit: 200 }],
@@ -209,6 +216,13 @@ export default function GraphView() {
             'font-weight': 700 as unknown as string,
           } as unknown as cytoscape.Css.Node,
         },
+        // ── Spark nodes — label hidden; shown via hover tooltip ───────────
+        {
+          selector: 'node[type = "spark"]',
+          style: {
+            'text-opacity': 0,
+          },
+        },
         // ── Tag nodes — smaller, faint ───────────────────────────────────
         {
           selector: 'node[type = "tag"]',
@@ -308,9 +322,17 @@ export default function GraphView() {
       });
     });
 
-    // Neighbour highlight on mouseover
+    // Neighbour highlight + tooltip on mouseover
     cyInstance.current.on('mouseover', 'node', (evt) => {
       const node = evt.target;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const oe = (evt as any).originalEvent as MouseEvent;
+      setTooltip({
+        x: oe.clientX,
+        y: oe.clientY,
+        label: node.data('label'),
+        type: node.data('type'),
+      });
       const cy = cyInstance.current!;
       const connected = node.closedNeighborhood();
       cy.elements().difference(connected).addClass('dimmed');
@@ -319,6 +341,7 @@ export default function GraphView() {
     });
 
     cyInstance.current.on('mouseout', 'node', () => {
+      setTooltip(null);
       const cy = cyInstance.current!;
       cy.elements().removeClass('dimmed').removeClass('highlighted');
     });
@@ -465,6 +488,32 @@ export default function GraphView() {
         {!isLoading && !isError && (
           <>
             <div ref={cyRef} className="cy-container" />
+            {tooltip && (
+              <div
+                style={{
+                  position: 'fixed',
+                  left: tooltip.x,
+                  top: tooltip.y,
+                  transform: 'translate(-50%, calc(-100% - 12px))',
+                  maxWidth: '240px',
+                  background: 'rgba(13,17,23,0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: `1px solid ${NODE_BORDER[tooltip.type] ?? '#393939'}`,
+                  borderRadius: '4px',
+                  padding: '0.5rem 0.75rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 500,
+                  color: '#f4f4f4',
+                  lineHeight: 1.4,
+                  pointerEvents: 'none',
+                  zIndex: 9999,
+                  boxShadow: `0 4px 20px ${NODE_COLORS[tooltip.type] ?? '#4589ff'}44`,
+                  whiteSpace: 'normal',
+                }}
+              >
+                {tooltip.label}
+              </div>
+            )}
             {selectedNode && (
               <div
                 style={{
