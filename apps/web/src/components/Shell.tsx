@@ -52,7 +52,7 @@ export default function Shell({ children }: ShellProps) {
           onClick={() => setSideNavOpen((o) => !o)}
           isActive={sideNavOpen}
         />
-        <HeaderName element={Link} to="/dashboard" prefix="">
+        <HeaderName {...({ element: Link, to: '/dashboard', prefix: '' } as any)}>
           CortexYou
         </HeaderName>
         <HeaderGlobalBar>

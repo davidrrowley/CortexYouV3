@@ -17,7 +17,9 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
   mixed: 'Mixed',
 };
 
-const STATUS_TAG_TYPES: Record<string, React.ComponentProps<typeof Tag>['type']> = {
+type TagColor = 'red' | 'magenta' | 'purple' | 'blue' | 'cyan' | 'teal' | 'green' | 'gray' | 'cool-gray' | 'warm-gray' | 'high-contrast' | 'outline';
+
+const STATUS_TAG_TYPES: Record<string, TagColor> = {
   inbox: 'blue',
   reviewed: 'teal',
   distilled: 'green',
