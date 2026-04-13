@@ -33,6 +33,12 @@ body,
   transition: none;
 }
 
+// Carbon hides HeaderMenuButton at lg+ when any SideNav is present (persistent-layout assumption).
+// Our SideNav is overlay-only, so always keep the hamburger visible.
+.cds--header__menu-trigger {
+  display: flex !important;
+}
+
 // Graph canvas container
 .cy-container {
   width: 100%;

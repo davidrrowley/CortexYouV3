@@ -87,9 +87,14 @@ export default function DashboardView() {
         </Tile>
       </Column>
 
+      {/* Divider between stats and content */}
+      <Column sm={4} md={8} lg={16}>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--cds-border-subtle)', margin: '2rem 0 0' }} />
+      </Column>
+
       {/* Recent sparks */}
       <Column sm={4} md={8} lg={10}>
-        <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ marginTop: '1.5rem', paddingRight: '2rem', borderRight: '1px solid var(--cds-border-subtle)' }}>
           <div
             style={{
               display: 'flex',
@@ -145,7 +150,7 @@ export default function DashboardView() {
 
       {/* Recent concepts */}
       <Column sm={4} md={8} lg={6}>
-        <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ marginTop: '1.5rem', paddingLeft: '1rem' }}>
           <div
             style={{
               display: 'flex',
@@ -154,7 +159,7 @@ export default function DashboardView() {
               marginBottom: '0.75rem',
             }}
           >
-            <h2 style={{ fontSize: '1rem', fontWeight: 600 }}>Concepts</h2>
+            <h2 className="section-heading" style={{ margin: 0 }}>Concepts</h2>
             <Button
               kind="ghost"
               size="sm"
