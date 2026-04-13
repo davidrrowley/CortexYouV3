@@ -1,20 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   Modal,
-  TextInput,
-  TextArea,
-  Select,
-  SelectItem,
-  Button,
-  Tag,
-  FileUploader,
   InlineNotification,
   Form,
-  Stack,
 } from '@carbon/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createSpark, uploadFileDirect } from '../api/client';
-import type { ContentType } from '../types';
+import SparkForm, { DEFAULT_SPARK_FORM_VALUES } from './SparkForm';
+import type { SparkFormValues } from './SparkForm';
 
 interface Props {
   onClose: () => void;
@@ -22,30 +15,29 @@ interface Props {
 
 export default function QuickCapture({ onClose }: Props) {
   const qc = useQueryClient();
-  const [title, setTitle] = useState('');
-  const [sourceUrl, setSourceUrl] = useState('');
-  const [bodyMarkdown, setBodyMarkdown] = useState('');
-  const [whyItMatters, setWhyItMatters] = useState('');
-  const [contentType, setContentType] = useState<ContentType>('note');
-  const [tagsInput, setTagsInput] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
+  const [values, setValues] = useState<SparkFormValues>(DEFAULT_SPARK_FORM_VALUES);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function handleChange(patch: Partial<SparkFormValues>) {
+    setValues((v) => ({ ...v, ...patch }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!values.title.trim()) return;
 
     setSaving(true);
     setError(null);
-    try {
-      const tags = tagsInput
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean);
 
+    const tags = values.tagsInput
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    try {
       const media = [];
-      for (const file of files) {
+      for (const file of values.files) {
         const { blobPath } = await uploadFileDirect(file);
         media.push({
           kind: 'image' as const,
@@ -57,12 +49,12 @@ export default function QuickCapture({ onClose }: Props) {
       }
 
       await createSpark({
-        title: title.trim(),
+        title: values.title.trim(),
         summary: '',
-        whyItMatters,
-        contentType,
-        bodyMarkdown,
-        sourceUrl: sourceUrl || null,
+        whyItMatters: values.whyItMatters,
+        contentType: values.contentType,
+        bodyMarkdown: values.bodyMarkdown,
+        sourceUrl: values.sourceUrl || null,
         media,
         tags,
         conceptIds: [],
@@ -96,89 +88,27 @@ export default function QuickCapture({ onClose }: Props) {
       onRequestClose={onClose}
       onSecondarySubmit={onClose}
       size="md"
-      primaryButtonDisabled={saving || !title.trim()}
+      primaryButtonDisabled={saving || !values.title.trim()}
     >
       <Form onSubmit={handleSubmit}>
-        <Stack gap={5}>
-          {error && (
-            <InlineNotification
-              kind="error"
-              title="Error"
-              subtitle={error}
-              onClose={() => setError(null)}
-            />
-          )}
-
-          <TextInput
-            id="capture-title"
-            labelText="Title *"
-            placeholder="What caught your attention?"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            autoFocus
+        {error && (
+          <InlineNotification
+            kind="error"
+            title="Error"
+            subtitle={error}
+            onClose={() => setError(null)}
+            style={{ marginBottom: '1rem' }}
           />
-
-          <Select
-            id="capture-content-type"
-            labelText="Content type"
-            value={contentType}
-            onChange={(e) => setContentType(e.target.value as ContentType)}
-          >
-            <SelectItem value="note" text="Note" />
-            <SelectItem value="link" text="Link" />
-            <SelectItem value="image" text="Image" />
-            <SelectItem value="quote" text="Quote" />
-            <SelectItem value="mixed" text="Mixed" />
-          </Select>
-
-          <TextInput
-            id="capture-url"
-            labelText="URL"
-            placeholder="https://…"
-            value={sourceUrl}
-            onChange={(e) => setSourceUrl(e.target.value)}
-            type="url"
-          />
-
-          <TextArea
-            id="capture-body"
-            labelText="Notes"
-            placeholder="Add any context, highlights, or raw text…"
-            value={bodyMarkdown}
-            onChange={(e) => setBodyMarkdown(e.target.value)}
-            rows={4}
-          />
-
-          <TextInput
-            id="capture-why"
-            labelText="Why it matters"
-            placeholder="One sentence on why you captured this"
-            value={whyItMatters}
-            onChange={(e) => setWhyItMatters(e.target.value)}
-          />
-
-          <TextInput
-            id="capture-tags"
-            labelText="Tags (comma-separated)"
-            placeholder="ai, research, ideas"
-            value={tagsInput}
-            onChange={(e) => setTagsInput(e.target.value)}
-          />
-
-          <FileUploader
-            labelTitle="Attach images"
-            labelDescription="Max 50 MB per file. JPEG, PNG, GIF, WEBP, HEIC."
-            buttonLabel="Add images"
-            filenameStatus="edit"
-            accept={['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic']}
-            multiple
-            onChange={(e) => {
-              const input = e.target as HTMLInputElement;
-              if (input.files) setFiles(Array.from(input.files));
-            }}
-          />
-        </Stack>
+        )}
+        <SparkForm
+          values={values}
+          onChange={handleChange}
+          idPrefix="quick-capture"
+          bodyRows={4}
+          autoFocus
+        />
       </Form>
     </Modal>
   );
 }
+

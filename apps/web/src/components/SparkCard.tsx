@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Tile, Tag, Button, OverflowMenu, OverflowMenuItem } from '@carbon/react';
+import { ClickableTile, Tag, OverflowMenu, OverflowMenuItem } from '@carbon/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteSpark } from '../api/client';
 import type { Spark } from '../types';
@@ -17,6 +17,13 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
   mixed: 'Mixed',
 };
 
+const STATUS_TAG_TYPES: Record<string, React.ComponentProps<typeof Tag>['type']> = {
+  inbox: 'blue',
+  reviewed: 'teal',
+  distilled: 'green',
+  archived: 'gray',
+};
+
 export default function SparkCard({ spark }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -27,13 +34,13 @@ export default function SparkCard({ spark }: Props) {
   });
 
   return (
-    <Tile
+    <ClickableTile
       style={{
-        cursor: 'pointer',
         position: 'relative',
         marginBottom: '1px',
       }}
       onClick={() => navigate(`/sparks/${spark.id}`)}
+      aria-label={spark.title}
     >
       <div
         style={{
@@ -75,7 +82,7 @@ export default function SparkCard({ spark }: Props) {
             <Tag type="blue" size="sm">
               {CONTENT_TYPE_LABELS[spark.contentType] ?? spark.contentType}
             </Tag>
-            <Tag type="outline" size="sm">
+            <Tag type={STATUS_TAG_TYPES[spark.status] ?? 'outline'} size="sm">
               {spark.status}
             </Tag>
             {spark.tags.slice(0, 3).map((tag) => (
@@ -113,6 +120,6 @@ export default function SparkCard({ spark }: Props) {
           </OverflowMenu>
         </div>
       </div>
-    </Tile>
+    </ClickableTile>
   );
 }

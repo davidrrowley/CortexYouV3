@@ -1,10 +1,22 @@
-// Extend Carbon theme overrides
-@use '@carbon/styles/scss/theme' as *;
-@use '@carbon/styles/scss/themes' as themes;
+// Set g10 as the default theme (GlobalTheme in main.tsx handles runtime switching)
+@use '@carbon/react/scss/themes';
+@use '@carbon/react/scss/theme' with ($theme: themes.$g10);
+@use '@carbon/type';
 
-// App-level overrides on top of Carbon g10
-:root {
-  --cds-background: #f4f4f4;
+// Typography helpers using Carbon type tokens
+.page-heading {
+  @include type.type-style('productive-heading-04');
+  margin-bottom: 0.25rem;
+}
+
+.page-subheading {
+  @include type.type-style('body-short-01');
+  color: var(--cds-text-secondary);
+}
+
+.section-heading {
+  @include type.type-style('productive-heading-02');
+  margin-bottom: 1rem;
 }
 
 // Ensure full-height layout

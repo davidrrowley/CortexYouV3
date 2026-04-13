@@ -42,12 +42,8 @@ export default function SettingsView() {
     <Grid condensed>
       <Column sm={4} md={8} lg={12}>
         <div style={{ paddingTop: '1rem', paddingBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-            Settings & Admin
-          </h1>
-          <p style={{ color: 'var(--cds-text-secondary)', fontSize: '0.875rem' }}>
-            Derived artefact management and data export.
-          </p>
+          <h1 className="page-heading">Settings &amp; Admin</h1>
+          <p className="page-subheading">Derived artefact management and data export.</p>
         </div>
 
         {/* Derived artefacts */}

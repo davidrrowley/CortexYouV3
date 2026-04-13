@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Grid,
   Column,
-  TextInput,
+  Search,
   Select,
   SelectItem,
   Tag,
@@ -12,7 +12,7 @@ import {
   SkeletonPlaceholder,
   InlineNotification,
 } from '@carbon/react';
-import { Search, Filter, Close } from '@carbon/icons-react';
+import { Close } from '@carbon/icons-react';
 import { listSparks } from '../api/client';
 import SparkCard from '../components/SparkCard';
 import type { SparkListParams } from '../types';
@@ -42,8 +42,8 @@ export default function BrowseView() {
   });
   const [searchInput, setSearchInput] = useState('');
 
-  function applySearch() {
-    setParams((p) => ({ ...p, q: searchInput }));
+  function applySearch(value: string) {
+    setParams((p) => ({ ...p, q: value || undefined }));
   }
 
   function clearFilters() {
@@ -63,10 +63,8 @@ export default function BrowseView() {
     <Grid condensed>
       <Column sm={4} md={8} lg={16}>
         <div style={{ paddingTop: '1rem', paddingBottom: '1rem' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-            Browse
-          </h1>
-          <p style={{ color: 'var(--cds-text-secondary)', fontSize: '0.875rem' }}>
+          <h1 className="page-heading">Browse</h1>
+          <p className="page-subheading">
             {data ? `${data.total} captures` : 'Your captured sparks'}
           </p>
         </div>
@@ -84,23 +82,24 @@ export default function BrowseView() {
           }}
         >
           <div style={{ flex: '1 1 240px', minWidth: '200px' }}>
-            <TextInput
+            <Search
               id="search"
               labelText="Search"
               placeholder="Search title, tags, content…"
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && applySearch()}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+              }}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') applySearch(searchInput);
+              }}
+              onClear={() => {
+                setSearchInput('');
+                applySearch('');
+              }}
+              size="lg"
             />
           </div>
-          <Button
-            renderIcon={Search}
-            size="md"
-            onClick={applySearch}
-            style={{ alignSelf: 'flex-end', marginBottom: '1px' }}
-          >
-            Search
-          </Button>
           <div style={{ flex: '0 1 160px', minWidth: '140px' }}>
             <Select
               id="filter-status"
@@ -206,15 +205,24 @@ export default function BrowseView() {
 
         {data?.items.length === 0 && !isLoading && (
           <Tile>
-            <p
-              style={{
-                color: 'var(--cds-text-secondary)',
-                textAlign: 'center',
-                padding: '3rem 0',
-              }}
-            >
-              No sparks found.
-            </p>
+            <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+              {hasFilters ? (
+                <>
+                  <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>No results</p>
+                  <p style={{ color: 'var(--cds-text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+                    Try adjusting your search or filters.
+                  </p>
+                  <Button kind="ghost" renderIcon={Close} onClick={clearFilters}>Clear filters</Button>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>No sparks yet</p>
+                  <p style={{ color: 'var(--cds-text-secondary)', fontSize: '0.875rem' }}>
+                    Head to Capture to record your first idea.
+                  </p>
+                </>
+              )}
+            </div>
           </Tile>
         )}
       </Column>

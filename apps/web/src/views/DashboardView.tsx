@@ -36,12 +36,8 @@ export default function DashboardView() {
       {/* Header row */}
       <Column sm={4} md={8} lg={16}>
         <div style={{ paddingBottom: '1.5rem', paddingTop: '1rem' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-            Dashboard
-          </h1>
-          <p style={{ color: 'var(--cds-text-secondary)', fontSize: '0.875rem' }}>
-            Your knowledge base at a glance.
-          </p>
+          <h1 className="page-heading">Dashboard</h1>
+          <p className="page-subheading">Your knowledge base at a glance.</p>
         </div>
       </Column>
 
@@ -102,7 +98,7 @@ export default function DashboardView() {
               marginBottom: '0.75rem',
             }}
           >
-            <h2 style={{ fontSize: '1rem', fontWeight: 600 }}>Recent Sparks</h2>
+            <h2 className="section-heading" style={{ margin: 0 }}>Recent Sparks</h2>
             <Button
               kind="ghost"
               size="sm"
@@ -135,13 +131,13 @@ export default function DashboardView() {
 
           {sparks.data?.items.length === 0 && (
             <Tile>
-              <p style={{ color: 'var(--cds-text-secondary)', textAlign: 'center', padding: '2rem 0' }}>
-                No sparks yet. Click{' '}
-                <Button kind="ghost" size="sm" onClick={openCapture} style={{ padding: '0' }}>
-                  Add note
-                </Button>{' '}
-                to get started.
-              </p>
+              <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Nothing here yet</p>
+                <p style={{ color: 'var(--cds-text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+                  Capture your first idea, link, or note to get started.
+                </p>
+                <Button renderIcon={Add} onClick={openCapture}>Add your first spark</Button>
+              </div>
             </Tile>
           )}
         </div>

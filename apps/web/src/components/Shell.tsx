@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Header,
+  HeaderMenuButton,
   HeaderName,
   HeaderGlobalBar,
   HeaderGlobalAction,
@@ -19,7 +20,6 @@ import {
   Network_3,
   Idea,
   Settings,
-  Menu,
 } from '@carbon/icons-react';
 import { useAppStore } from '../store/useAppStore';
 import QuickCapture from './QuickCapture';
@@ -47,14 +47,12 @@ export default function Shell({ children }: ShellProps) {
     <>
       <SkipToContent href="#main-content" />
       <Header aria-label="CortexYou">
-        <HeaderGlobalAction
-          aria-label="Toggle navigation"
+        <HeaderMenuButton
+          aria-label={sideNavOpen ? 'Close menu' : 'Open menu'}
           onClick={() => setSideNavOpen((o) => !o)}
-          tooltipAlignment="end"
-        >
-          <Menu size={20} />
-        </HeaderGlobalAction>
-        <HeaderName prefix="" onClick={() => navigate('/dashboard')}>
+          isActive={sideNavOpen}
+        />
+        <HeaderName element={Link} to="/dashboard" prefix="">
           CortexYou
         </HeaderName>
         <HeaderGlobalBar>
@@ -73,6 +71,7 @@ export default function Shell({ children }: ShellProps) {
         expanded={sideNavOpen}
         onOverlayClick={() => setSideNavOpen(false)}
         isPersistent={false}
+        isRail={false}
       >
         <SideNavItems>
           {NAV_ITEMS.map(({ label, path, Icon }) => (
@@ -93,7 +92,7 @@ export default function Shell({ children }: ShellProps) {
         </SideNavItems>
       </SideNav>
 
-      <Content id="main-content" style={{ paddingTop: '3rem' }}>
+      <Content id="main-content">
         {children}
       </Content>
 
