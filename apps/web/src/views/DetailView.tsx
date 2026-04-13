@@ -19,7 +19,7 @@ import {
   Link,
 } from '@carbon/react';
 import { Edit, Save, TrashCan, ArrowLeft, Link as LinkIcon, Add } from '@carbon/icons-react';
-import { getSpark, updateSpark, deleteSpark, listConcepts, createRelationship, deleteRelationship } from '../api/client';
+import { getSpark, updateSpark, deleteSpark, listConcepts, listSparks, createRelationship, deleteRelationship } from '../api/client';
 import type { Spark, SparkStatus, EdgeType } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 import DOMPurify from 'dompurify';
@@ -43,6 +43,7 @@ export default function DetailView() {
   // Link modal state
   const [linkTarget, setLinkTarget] = useState('');
   const [linkType, setLinkType] = useState<EdgeType>('relates_to');
+  const [linkTargetType, setLinkTargetType] = useState<'spark' | 'concept'>('spark');
 
   const { data: spark, isLoading, isError } = useQuery({
     queryKey: ['spark', id],
@@ -53,6 +54,11 @@ export default function DetailView() {
   const { data: concepts } = useQuery({
     queryKey: ['concepts'],
     queryFn: listConcepts,
+  });
+
+  const { data: sparks } = useQuery({
+    queryKey: ['sparks'],
+    queryFn: () => listSparks({ limit: 200 }),
   });
 
   const saveMutation = useMutation({
@@ -81,6 +87,22 @@ export default function DetailView() {
       setLinkTarget('');
     },
   });
+
+  function handleLinkTargetTypeChange(value: 'spark' | 'concept') {
+    setLinkTargetType(value);
+    setLinkTarget('');
+    if (value === 'spark' && linkType === 'belongs_to') {
+      setLinkType('relates_to');
+    }
+  }
+
+  function handleLinkTypeChange(value: EdgeType) {
+    setLinkType(value);
+    if (value === 'belongs_to') {
+      setLinkTargetType('concept');
+      setLinkTarget('');
+    }
+  }
 
   const unlinkMutation = useMutation({
     mutationFn: ({
@@ -380,19 +402,31 @@ export default function DetailView() {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '1rem' }}>
           <Select
+            id="link-target-type"
+            labelText="Link to"
+            value={linkTargetType}
+            onChange={(e) => handleLinkTargetTypeChange(e.target.value as 'spark' | 'concept')}
+          >
+            <SelectItem value="spark" text="Spark" />
+            <SelectItem value="concept" text="Concept" />
+          </Select>
+
+          <Select
             id="link-type"
             labelText="Relationship type"
             value={linkType}
-            onChange={(e) => setLinkType(e.target.value as EdgeType)}
+            onChange={(e) => handleLinkTypeChange(e.target.value as EdgeType)}
           >
             <SelectItem value="relates_to" text="Relates to" />
             <SelectItem value="supports" text="Supports" />
             <SelectItem value="examples" text="Is an example of" />
             <SelectItem value="inspired_by" text="Inspired by" />
-            <SelectItem value="belongs_to" text="Belongs to (concept)" />
+            {linkTargetType === 'concept' && (
+              <SelectItem value="belongs_to" text="Belongs to (concept)" />
+            )}
           </Select>
 
-          {linkType === 'belongs_to' ? (
+          {linkTargetType === 'concept' ? (
             <Select
               id="link-target-concept"
               labelText="Concept"
@@ -405,13 +439,19 @@ export default function DetailView() {
               ))}
             </Select>
           ) : (
-            <TextInput
-              id="link-target"
-              labelText="Target ID (spark_… or concept_…)"
-              placeholder="spark_01HXYZ… or concept_01HXYZ…"
+            <Select
+              id="link-target-spark"
+              labelText="Spark"
               value={linkTarget}
               onChange={(e) => setLinkTarget(e.target.value)}
-            />
+            >
+              <SelectItem value="" text="Select a spark…" />
+              {(sparks?.items ?? [])
+                .filter((s) => s.id !== id)
+                .map((s) => (
+                  <SelectItem key={s.id} value={s.id} text={s.title} />
+                ))}
+            </Select>
           )}
         </div>
       </Modal>

@@ -9,10 +9,12 @@
  *   AZURE_OPENAI_ENDPOINT   – e.g. https://itmifoundryrg.services.ai.azure.com/api/projects/itmi-default/openai/v1
  *   AZURE_OPENAI_API_KEY    – your Foundry API key
  *   AZURE_OPENAI_DEPLOYMENT – model deployment name, e.g. gpt-4o (default)
+ *   AZURE_OPENAI_API_VERSION – only needed for non-/openai/v1 endpoints (default: 2024-12-01-preview)
  */
 
-import OpenAI from 'openai';
 import type { Spark, Concept } from '../types/models';
+
+type Logger = { log: (...args: unknown[]) => void };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -63,41 +65,57 @@ ${conceptList}`;
 export async function enrichSparkWithConcepts(
   spark: Spark,
   existingConcepts: Concept[],
+  logger?: Logger,
 ): Promise<EnrichmentResult> {
-  const endpoint = process.env['AZURE_OPENAI_ENDPOINT'];
+  const endpoint = process.env['AZURE_OPENAI_ENDPOINT']?.replace(/\/+$/, '');
   const apiKey = process.env['AZURE_OPENAI_API_KEY'];
   const deployment = process.env['AZURE_OPENAI_DEPLOYMENT'] ?? 'gpt-4o';
+  const apiVersion = process.env['AZURE_OPENAI_API_VERSION'] ?? '2024-12-01-preview';
 
   if (!endpoint || !apiKey) {
-    // Enrichment is optional — skip gracefully when not configured
+    logger?.log('[conceptEnricher] skipping – AZURE_OPENAI_ENDPOINT or AZURE_OPENAI_API_KEY not set');
     return { matchedConceptIds: [], newConcepts: [] };
   }
 
-  const client = new OpenAI({
-    baseURL: endpoint,
-    apiKey,
-    // Azure AI Foundry uses api-version in query + api-key header
-    defaultQuery: { 'api-version': '2025-01-01-preview' },
-    defaultHeaders: { 'api-key': apiKey },
+  // Match chat.ts: /openai/v1 endpoints don't need api-version in the path
+  const chatUrl = endpoint.includes('/openai/v1')
+    ? `${endpoint}/chat/completions`
+    : `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
+
+  logger?.log(`[conceptEnricher] POST ${chatUrl} model=${deployment} concepts=${existingConcepts.length}`);
+
+  const aiResponse = await fetch(chatUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    },
+    body: JSON.stringify({
+      model: deployment,
+      temperature: 0.2,
+      max_tokens: 512,
+      response_format: { type: 'json_object' },
+      messages: [{ role: 'user', content: buildPrompt(spark, existingConcepts) }],
+    }),
   });
 
-  const response = await client.chat.completions.create({
-    model: deployment,
-    temperature: 0.2,
-    max_tokens: 512,
-    response_format: { type: 'json_object' },
-    messages: [
-      { role: 'user', content: buildPrompt(spark, existingConcepts) },
-    ],
-  });
+  if (!aiResponse.ok) {
+    const errText = await aiResponse.text().catch(() => '(unreadable)');
+    logger?.log(`[conceptEnricher] upstream error ${aiResponse.status}: ${errText}`);
+    return { matchedConceptIds: [], newConcepts: [] };
+  }
 
-  const raw = response.choices[0]?.message?.content ?? '{}';
+  const data = await aiResponse.json() as {
+    choices?: Array<{ message: { content: string } }>;
+  };
+  const raw = data.choices?.[0]?.message?.content ?? '{}';
+  logger?.log(`[conceptEnricher] raw response: ${raw}`);
 
   let parsed: EnrichmentResult;
   try {
     parsed = JSON.parse(raw) as EnrichmentResult;
   } catch {
-    // Malformed response — degrade gracefully
+    logger?.log('[conceptEnricher] failed to parse JSON response');
     return { matchedConceptIds: [], newConcepts: [] };
   }
 
@@ -111,5 +129,6 @@ export async function enrichSparkWithConcepts(
     (c) => c.name?.trim() && c.description?.trim(),
   );
 
+  logger?.log(`[conceptEnricher] matched=${matchedConceptIds.length} new=${newConcepts.length}`);
   return { matchedConceptIds, newConcepts };
 }

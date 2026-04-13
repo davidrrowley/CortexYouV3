@@ -97,7 +97,7 @@ async function getSpark(
 
 async function createSpark(
   req: HttpRequest,
-  _ctx: InvocationContext,
+  ctx: InvocationContext,
 ): Promise<HttpResponseInit> {
   const auth = requireAuth(req);
   if ('error' in auth) return { status: 401 };
@@ -157,7 +157,7 @@ async function createSpark(
       if (c && !c.deletedAt) allConcepts.push(c);
     }
 
-    const enrichment = await enrichSparkWithConcepts(spark, allConcepts);
+    const enrichment = await enrichSparkWithConcepts(spark, allConcepts, ctx);
     const enrichedConceptIds = [...new Set([...spark.conceptIds, ...enrichment.matchedConceptIds])];
 
     // Create any net-new concepts the model proposed
@@ -192,7 +192,7 @@ async function createSpark(
     }
   } catch (err) {
     // Enrichment failure must never block the 201 response
-    console.error('[conceptEnricher] failed:', err);
+    ctx.log('[conceptEnricher] failed:', err);
   }
 
   return json(spark, 201);
