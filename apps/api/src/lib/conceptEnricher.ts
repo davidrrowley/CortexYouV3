@@ -39,16 +39,17 @@ function buildPrompt(spark: Spark, existingConcepts: Concept[]): string {
 
 Your job:
 1. Look at the EXISTING CONCEPTS list.
-2. Decide which concepts the spark *clearly* belongs to. Include a concept only if it's a genuinely strong thematic match — not a superficial word match.
-3. If the spark introduces a theme not covered by any existing concept, propose one or more NEW concepts (name ≤ 5 words, description ≤ 80 chars).
+2. Decide which concepts the spark *clearly* belongs to. Include a concept only if it's a genuinely strong thematic match — not a superficial word match. Prefer matching an existing concept over creating a new one.
+3. Only if the spark introduces a single dominant theme that is not covered by ANY existing concept, propose exactly ONE new concept (name ≤ 5 words, description ≤ 80 chars). If the spark touches multiple new themes, pick only the most central one.
+4. If existing concepts cover the spark well enough, do NOT create new ones even if the match is imperfect.
 
 Respond ONLY with valid JSON in this exact shape — no markdown, no prose:
 {
   "matchedConceptIds": ["<id>", ...],
-  "newConcepts": [{ "name": "<name>", "description": "<description>" }, ...]
+  "newConcepts": [{ "name": "<name>", "description": "<description>" }]
 }
 
-If no existing concepts match and no new concept is warranted, return { "matchedConceptIds": [], "newConcepts": [] }.
+"newConcepts" must contain at most ONE entry. If no existing concepts match and no new concept is warranted, return { "matchedConceptIds": [], "newConcepts": [] }.
 
 ─── SPARK ───────────────────────────────────────────────────────────────────────
 Title: ${spark.title}
@@ -125,9 +126,10 @@ export async function enrichSparkWithConcepts(
     existingIds.has(id),
   );
 
-  const newConcepts = (parsed.newConcepts ?? []).filter(
-    (c) => c.name?.trim() && c.description?.trim(),
-  );
+  // Cap at one new concept regardless of what the model returns
+  const newConcepts = (parsed.newConcepts ?? [])
+    .filter((c) => c.name?.trim() && c.description?.trim())
+    .slice(0, 1);
 
   logger?.log(`[conceptEnricher] matched=${matchedConceptIds.length} new=${newConcepts.length}`);
   return { matchedConceptIds, newConcepts };
